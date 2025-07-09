@@ -503,6 +503,38 @@ function SetStatusChanged(status) {
     console.log('SetStatusChanged called:', status);
     currentStatus = status;
     updateStatusDisplay();
+    
+    // Check if workshop downloads are completed and force progress to 100%
+    const workshopCompletedStatuses = [
+        'Starting Lua...',
+        'Loading gamemode...',
+        'Connecting to server...',
+        'Almost ready...',
+        'Spawning...',
+        'Workshop Complete'
+    ];
+    
+    const lowerStatus = status.toLowerCase();
+    const isWorkshopCompleted = workshopCompletedStatuses.some(completedStatus => 
+        lowerStatus.includes(completedStatus.toLowerCase()) ||
+        lowerStatus.includes('lua') ||
+        lowerStatus.includes('gamemode') ||
+        lowerStatus.includes('spawning') ||
+        lowerStatus.includes('workshop complete') ||
+        lowerStatus.includes('starting')
+    );
+    
+    if (isWorkshopCompleted && fileProgress.needed > 0) {
+        console.log('🎯 Workshop completed detected, forcing progress to 100%');
+        fileProgress.needed = 0;
+        updateProgressBar();
+        
+        // Update status to show completion
+        const completionElement = document.getElementById('files-progress');
+        if (completionElement) {
+            completionElement.textContent = `${fileProgress.total}/${fileProgress.total} files`;
+        }
+    }
 }
 
 /**
@@ -513,6 +545,36 @@ function SetFilesNeeded(needed) {
     console.log('SetFilesNeeded called:', needed);
     fileProgress.needed = needed;
     updateProgressBar();
+    
+    // If we reach 0 files needed, ensure we show 100%
+    if (needed === 0 && fileProgress.total > 0) {
+        console.log('🎯 All files downloaded, showing 100% completion');
+        const completionElement = document.getElementById('files-progress');
+        if (completionElement) {
+            completionElement.textContent = `${fileProgress.total}/${fileProgress.total} files`;
+        }
+    }
+}
+
+/**
+ * Force the download progress to 100% completion
+ * This can be called manually if the progress gets stuck
+ */
+function ForceProgressComplete() {
+    console.log('🎯 Manually forcing progress to 100%');
+    if (fileProgress.total > 0) {
+        fileProgress.needed = 0;
+        updateProgressBar();
+        
+        const completionElement = document.getElementById('files-progress');
+        if (completionElement) {
+            completionElement.textContent = `${fileProgress.total}/${fileProgress.total} files`;
+        }
+        
+        // Update status
+        currentStatus = 'Download Complete - Starting Game...';
+        updateStatusDisplay();
+    }
 }
 
 // Utility functions for testing (can be called from browser console)
@@ -577,6 +639,11 @@ window.testLoadingScreen = {
                 clearInterval(interval);
             }
         }, 2000);
+    },
+    
+    // Force progress to 100% manually
+    forceComplete: function() {
+        ForceProgressComplete();
     }
 };
 
@@ -585,4 +652,5 @@ console.log('Fallout Decay Loading Screen initialized');
 console.log('Available test functions:');
 console.log('- testLoadingScreen.testGameDetails()');
 console.log('- testLoadingScreen.testFileDownload()');
-console.log('- testLoadingScreen.testStatusChanges()'); 
+console.log('- testLoadingScreen.testStatusChanges()');
+console.log('- testLoadingScreen.forceComplete() - Force progress to 100%'); 
