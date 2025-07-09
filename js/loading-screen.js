@@ -20,6 +20,10 @@ let fileProgress = {
 
 let currentStatus = 'Initializing connection...';
 
+// Track when downloads might be stuck
+let downloadStuckTimer = null;
+let lastProgressUpdate = Date.now();
+
 // Background carousel images - using relative paths for Garry's Mod compatibility
 const backgroundImages = [
     'assets/imgs/background/1.png',
@@ -48,6 +52,21 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeTipsRotation();
         initializeURLParameters();
         addFadeInAnimations();
+        
+        // Check for stuck downloads after a delay
+        setTimeout(() => {
+            CheckAndForceIfStuck();
+        }, 5000);
+        
+        // Set up periodic checking for stuck downloads
+        setInterval(() => {
+            if (fileProgress.needed > 0 && fileProgress.total > 0) {
+                const timeSinceLastUpdate = Date.now() - lastProgressUpdate;
+                if (timeSinceLastUpdate > 15000) { // 15 seconds of no progress
+                    CheckAndForceIfStuck();
+                }
+            }
+        }, 10000); // Check every 10 seconds
     });
 });
 
@@ -511,21 +530,33 @@ function SetStatusChanged(status) {
         'Connecting to server...',
         'Almost ready...',
         'Spawning...',
-        'Workshop Complete'
+        'Workshop Complete',
+        'Client info sent!',
+        'Sending client info...',
+        'Getting Lua files...',
+        'Parsing Lua files...',
+        'Downloading Lua files...'
     ];
     
     const lowerStatus = status.toLowerCase();
     const isWorkshopCompleted = workshopCompletedStatuses.some(completedStatus => 
-        lowerStatus.includes(completedStatus.toLowerCase()) ||
-        lowerStatus.includes('lua') ||
-        lowerStatus.includes('gamemode') ||
-        lowerStatus.includes('spawning') ||
-        lowerStatus.includes('workshop complete') ||
-        lowerStatus.includes('starting')
-    );
+        lowerStatus.includes(completedStatus.toLowerCase())
+    ) ||
+    lowerStatus.includes('lua') ||
+    lowerStatus.includes('gamemode') ||
+    lowerStatus.includes('spawning') ||
+    lowerStatus.includes('workshop complete') ||
+    lowerStatus.includes('starting') ||
+    lowerStatus.includes('client info') ||
+    lowerStatus.includes('sending') ||
+    lowerStatus.includes('getting') ||
+    lowerStatus.includes('parsing') ||
+    lowerStatus.includes('sent!') ||
+    lowerStatus.includes('info sent');
     
     if (isWorkshopCompleted && fileProgress.needed > 0) {
         console.log('🎯 Workshop completed detected, forcing progress to 100%');
+        console.log('🎯 Detected status:', status);
         fileProgress.needed = 0;
         updateProgressBar();
         
@@ -546,6 +577,15 @@ function SetFilesNeeded(needed) {
     fileProgress.needed = needed;
     updateProgressBar();
     
+    // Update last progress time
+    lastProgressUpdate = Date.now();
+    
+    // Clear any existing stuck timer
+    if (downloadStuckTimer) {
+        clearTimeout(downloadStuckTimer);
+        downloadStuckTimer = null;
+    }
+    
     // If we reach 0 files needed, ensure we show 100%
     if (needed === 0 && fileProgress.total > 0) {
         console.log('🎯 All files downloaded, showing 100% completion');
@@ -553,6 +593,17 @@ function SetFilesNeeded(needed) {
         if (completionElement) {
             completionElement.textContent = `${fileProgress.total}/${fileProgress.total} files`;
         }
+    } else if (needed > 0 && fileProgress.total > 0) {
+        // Set a timer to force completion if stuck for too long
+        downloadStuckTimer = setTimeout(() => {
+            const timeSinceLastUpdate = Date.now() - lastProgressUpdate;
+            if (timeSinceLastUpdate > 30000 && fileProgress.needed > 0) { // 30 seconds
+                console.log('🎯 Download appears stuck for 30+ seconds, forcing completion');
+                console.log('🎯 Current status:', currentStatus);
+                console.log('🎯 Files stuck at:', `${fileProgress.total - fileProgress.needed}/${fileProgress.total}`);
+                ForceProgressComplete();
+            }
+        }, 30000);
     }
 }
 
@@ -571,9 +622,44 @@ function ForceProgressComplete() {
             completionElement.textContent = `${fileProgress.total}/${fileProgress.total} files`;
         }
         
+        // Clear any stuck timer
+        if (downloadStuckTimer) {
+            clearTimeout(downloadStuckTimer);
+            downloadStuckTimer = null;
+        }
+        
         // Update status
         currentStatus = 'Download Complete - Starting Game...';
         updateStatusDisplay();
+    }
+}
+
+/**
+ * Check if downloads are stuck and force completion if needed
+ */
+function CheckAndForceIfStuck() {
+    console.log('🔍 Checking if downloads are stuck...');
+    console.log('🔍 Current progress:', `${fileProgress.total - fileProgress.needed}/${fileProgress.total} files`);
+    console.log('🔍 Current status:', currentStatus);
+    console.log('🔍 Files needed:', fileProgress.needed);
+    
+    // If we have files needed but status indicates completion, force it
+    if (fileProgress.needed > 0 && fileProgress.total > 0) {
+        const lowerStatus = currentStatus.toLowerCase();
+        const shouldBeComplete = lowerStatus.includes('client info') ||
+                                lowerStatus.includes('sent!') ||
+                                lowerStatus.includes('starting') ||
+                                lowerStatus.includes('lua') ||
+                                lowerStatus.includes('gamemode');
+        
+        if (shouldBeComplete) {
+            console.log('🎯 Status indicates completion but files still needed - forcing completion');
+            ForceProgressComplete();
+        } else {
+            console.log('⚠️ Downloads appear stuck - you can call testLoadingScreen.forceComplete() to fix');
+        }
+    } else {
+        console.log('✅ Progress appears normal');
     }
 }
 
@@ -644,6 +730,11 @@ window.testLoadingScreen = {
     // Force progress to 100% manually
     forceComplete: function() {
         ForceProgressComplete();
+    },
+    
+    // Check if stuck and auto-fix if needed
+    checkStuck: function() {
+        CheckAndForceIfStuck();
     }
 };
 
@@ -653,4 +744,5 @@ console.log('Available test functions:');
 console.log('- testLoadingScreen.testGameDetails()');
 console.log('- testLoadingScreen.testFileDownload()');
 console.log('- testLoadingScreen.testStatusChanges()');
-console.log('- testLoadingScreen.forceComplete() - Force progress to 100%'); 
+console.log('- testLoadingScreen.forceComplete() - Force progress to 100%');
+console.log('- testLoadingScreen.checkStuck() - Check if downloads are stuck'); 
