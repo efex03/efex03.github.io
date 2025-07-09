@@ -76,16 +76,103 @@ function initializeBackgroundCarousel() {
 
 // Load configuration from JSON file
 async function loadConfiguration() {
-    try {
-        const response = await fetch('loading-screen-config/config.json');
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+    console.log('Attempting to load configuration...');
+    
+    // Try multiple potential paths for the config file
+    const configPaths = [
+        'loading-screen-config/config.json',
+        './loading-screen-config/config.json',
+        '/loading-screen-config/config.json',
+        'config.json'
+    ];
+    
+    for (const configPath of configPaths) {
+        try {
+            console.log(`Trying to load config from: ${configPath}`);
+            const response = await fetch(configPath);
+            
+            if (!response.ok) {
+                console.warn(`Failed to load from ${configPath}: HTTP ${response.status} ${response.statusText}`);
+                continue;
+            }
+            
+            const configData = await response.json();
+            loadingConfig = configData;
+            console.log('✅ Loading screen configuration loaded successfully from:', configPath);
+            console.log('Loaded config:', loadingConfig);
+            return; // Success, exit the function
+            
+        } catch (error) {
+            console.warn(`Failed to load config from ${configPath}:`, error.message);
+            continue;
         }
-        loadingConfig = await response.json();
-        console.log('Loading screen configuration loaded successfully');
+    }
+    
+    // If all paths failed, try to embed the config directly
+    console.warn('All config paths failed, attempting to load embedded config...');
+    try {
+        // Load the actual config data directly (avoiding fetch issues)
+        loadingConfig = {
+            "about": {
+                "title": "About",
+                "content": "Welcome to Fallout Decay, a post-apocalyptic survival RPG set in the year 2095, where you play as a survivor navigating a world ravaged by radiation and hostile mutated creatures. To survive, you must scavenge resources, craft essential tools, and eliminate the dangerous abominations that roam the wasteland. Choose your own path and specialization to develop unique skills and abilities that will help you thrive in this harsh environment. Throughout your journey, you'll encounter various communities—some will offer trade and sanctuary, while others may be raiders, slavers, or hostile groups looking to rob or eliminate you. Your survival depends on making the right alliances and knowing who to trust in this unforgiving world."
+            },
+            "basics": {
+                "title": "Laws of the Wasteland",
+                "rules": [
+                    "Do not RDM. Read the full rules ingame to see when it's permissible to kill another player.",
+                    "General prop/physgun abuse is not allowed.",
+                    "Blatant disrespect toward players/staff will not be tolerated.",
+                    "Exploitation and loop-holing of the rules is not allowed.",
+                    "New Life Rule- This means when you die you may not go back to an area you were killed for 5 minutes. (Except for PvE)"
+                ],
+                "footer": "to read all rules type /rules in game..."
+            },
+            "tips": [
+                {
+                    "icon": "assets/silkicons/lightbulb.png",
+                    "text": "Visit our website at https://falloutdecay.com to find the wiki or donate."
+                },
+                {
+                    "icon": "assets/silkicons/application_lightning.png",
+                    "text": "Killing irradiated creatures will yield loot and experience."
+                },
+                {
+                    "icon": "assets/silkicons/wrench.png",
+                    "text": "There are different classes that have different perks."
+                },
+                {
+                    "icon": "assets/silkicons/flag_red.png",
+                    "text": "Watch out in the wasteland, not everyone is so friendly."
+                },
+                {
+                    "icon": "assets/silkicons/package.png",
+                    "text": "We have PAC editor, but you need to be whitelisted to use it."
+                },
+                {
+                    "icon": "assets/silkicons/package.png",
+                    "text": "Join our discord to stay connected with the community and server updates."
+                },
+                {
+                    "icon": "assets/silkicons/bomb.png",
+                    "text": "Weapons and armors have durability. Be sure to repair them."
+                },
+                {
+                    "icon": "assets/silkicons/flag_green.png",
+                    "text": "New to the wasteland? Check out our wiki for more information."
+                },
+                {
+                    "icon": "assets/silkicons/car.png",
+                    "text": "You can craft vehicles to get around quicker, but you need a lot of resources to do it."
+                }
+            ]
+        };
+        console.log('✅ Using embedded configuration data');
+        console.log('Loaded config:', loadingConfig);
+        
     } catch (error) {
-        console.error('Failed to load loading screen configuration:', error);
-        // Use fallback content if config fails to load
+        console.error('❌ Failed to load embedded config, using fallback:', error);
+        // Use original fallback content if everything else fails
         loadingConfig = {
             about: {
                 title: "About",

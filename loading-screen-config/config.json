@@ -1,0 +1,55 @@
+{
+    "about": {
+        "title": "About",
+        "content": "Welcome to Fallout Decay, a post-apocalyptic survival RPG set in the year 2095, where you play as a survivor navigating a world ravaged by radiation and hostile mutated creatures. To survive, you must scavenge resources, craft essential tools, and eliminate the dangerous abominations that roam the wasteland. Choose your own path and specialization to develop unique skills and abilities that will help you thrive in this harsh environment. Throughout your journey, you'll encounter various communities—some will offer trade and sanctuary, while others may be raiders, slavers, or hostile groups looking to rob or eliminate you. Your survival depends on making the right alliances and knowing who to trust in this unforgiving world."
+    },
+    "basics": {
+        "title": "Laws of the Wasteland",
+        "rules": [
+            "Do not RDM. Read the full rules ingame to see when it's permissible to kill another player.",
+            "General prop/physgun abuse is not allowed.",
+            "Blatant disrespect toward players/staff will not be tolerated.",
+            "Exploitation and loop-holing of the rules is not allowed.",
+            "New Life Rule- This means when you die you may not go back to an area you were killed for 5 minutes. (Except for PvE)"
+        ],
+        "footer": "to read all rules type /rules in game..."
+    },
+    "tips": [
+        {
+            "icon": "assets/silkicons/lightbulb.png",
+            "text": "Visit our website at https://falloutdecay.com to find the wiki or donate."
+        },
+        {
+            "icon": "assets/silkicons/application_lightning.png",
+            "text": "Killing irradiated creatures will yield loot and experience."
+        },
+        {
+            "icon": "assets/silkicons/wrench.png",
+            "text": "There are different classes that have different perks."
+        },
+        {
+            "icon": "assets/silkicons/flag_red.png",
+            "text": "Watch out in the wasteland, not everyone is so friendly."
+        },
+        {
+            "icon": "assets/silkicons/package.png",
+            "text": "We have PAC editor, but you need to be whitelisted to use it."
+        },
+        {
+            "icon": "assets/silkicons/package.png",
+            "text": "Join our discord to stay connected with the community and server updates."
+        },
+        {
+            "icon": "assets/silkicons/bomb.png",
+            "text": "Weapons and armors have durability. Be sure to repair them."
+        },
+        {
+            "icon": "assets/silkicons/flag_green.png",
+            "text": "New to the wasteland? Check out our wiki for more information."
+        },
+        {
+            "icon": "assets/silkicons/car.png",
+            "text": "You can craft vehicles to get around quicker, but you need a lot of resources to do it."
+        }
+    ]
+}
