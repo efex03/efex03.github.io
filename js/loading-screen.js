@@ -34,7 +34,10 @@ const backgroundImages = [
     'assets/imgs/background/6.jpg',
     'assets/imgs/background/7.jpg',
     'assets/imgs/background/8.jpg',
-    'assets/imgs/background/10.jpg'
+    'assets/imgs/background/10.jpg',
+    "assets/imgs/background/11.jpg",
+    "assets/imgs/background/12.jpg",
+    "assets/imgs/background/13.png"
 ];
 
 // Configuration loaded from JSON
